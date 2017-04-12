@@ -14,7 +14,7 @@ function isStyle(file) {
 
     if (ext == '.css') {
         return true;
-    } else if (ext == '.js') {
+    } else if (ext == '.js' || ext == '.json') {
         return false;
     }
 
@@ -86,13 +86,16 @@ function gulpPrefix() {
                 if (check == true
                     || (typeof check == 'function' && check(str))
                 ) {
-                    _rule += dealRuleSpace(str);
+                    _rule += dealRuleLine(str);
 
                     var index = _rule.indexOf('}');
                     if (index > -1) {
                         _rule += '\n';
                         canwrite = true;
                     }
+                } else {
+                    canwrite = true;
+                    _rule = str;
                 }
 
                 if (canwrite || check == false) {
@@ -112,7 +115,7 @@ function gulpPrefix() {
         callback(null, file);
     });
 
-    function dealRuleSpace(str) {
+    function dealRuleLine(str) {
         str = str.trim();
 
         if (str.indexOf('{') > -1) {
@@ -122,7 +125,7 @@ function gulpPrefix() {
         }
 
         if (bracketStart) {
-            str = str.replace(/[\n]+$/g, '');
+            str = str.replace(/\n/g, '');
         }
 
         return str;
