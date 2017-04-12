@@ -1,5 +1,5 @@
 # gulp-css-format-oneline
-gulp plugin for format mutil lines css rule to oneline
+gulp plugin for format multi lines css rule to oneline
 
 # example
 ## origin
