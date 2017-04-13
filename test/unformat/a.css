@@ -1,12 +1,18 @@
-.a .c .b + a + c.asd:nth-child(3) {
+.a .c .b+a+c.asd:nth-child(3) {
     display: none;
     display: none;
     display: none;
 }
+/* comment */
+.c .a .b {display: none; font-size: 1rem; line-height: 3em;}
+.b {display: none; font-size: 1rem; line-height: 3em;}
 
-.b {
-    display: none;
-}
+/*comment
+sdasd
+asdasd
+ asda
+   dsad
+   */
 .c {}
 
 .d {}

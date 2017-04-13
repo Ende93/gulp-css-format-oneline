@@ -4,7 +4,9 @@ var path = require('path');
 
 var line = '';
 var styleStart = '<style>',
-    styleEnd = '<\/style>';
+    styleEnd = '<\/style>',
+    commentStart = '/*',
+    commentEnd = '*/';
 
 var BUFF_READ_LENGTH = 100;
 
@@ -37,24 +39,27 @@ function isStyle(file) {
     };
 }
 
-function readLine(data, cb) {
-    for(var index = data.indexOf('\n'); index > -1;) {
+function readLine(data, cb, end, len) {
+    for (var index = data.indexOf('\n');
+      index > -1; index = data.indexOf('\n'), line = '') {
         line += data.slice(0, index + 1);
 
         cb(line);
         data = data.slice(index + 1);
-
-        index = data.indexOf('\n');
-        line = '';
     }
 
-    if(data.length > 0) {
+    if (data.length > 0) {
         line = data;
+    }
+
+    if(end >= len) {
+        cb(line);
     }
 }
 
 function gulpPrefix() {
-    var bracketStart = false;
+    var bracketStart = false,
+        isComment = false;
 
     var stream = through.obj(function (file, encoding, callback) {
         if (file.isNull()) {
@@ -70,7 +75,8 @@ function gulpPrefix() {
         }
 
         var check = isStyle(file),
-            data, start = 0, end = 0;
+            data, start = 0,
+            end = 0;
         var buffer = new Buffer(''),
             _rule = '',
             canwrite = false,
@@ -88,15 +94,25 @@ function gulpPrefix() {
             }
 
             readLine(file.contents.slice(start, end).toString(), function (str) {
-                if (check == true
-                    || (typeof check == 'function' && check(str))
+                if (check == true ||
+                    (typeof check == 'function' && check(str))
                 ) {
-                    _rule += dealRuleLine(str);
-
-                    var index = _rule.indexOf('}');
-                    if (index > -1) {
-                        _rule += '\n';
+                    if (str.indexOf(commentStart) > -1 || isComment) {
                         canwrite = true;
+                        _rule = str;
+                        if(str.indexOf(commentEnd) > -1) {
+                            isComment = false;
+                        } else {
+                            isComment = true;
+                        }
+                    } else {
+                        _rule += dealRuleLine(str);
+
+                        var index = _rule.indexOf('}');
+                        if (index > -1) {
+                            _rule += '\n';
+                            canwrite = true;
+                        }
                     }
                 } else {
                     canwrite = true;
@@ -111,7 +127,7 @@ function gulpPrefix() {
                     _rule = '';
                     canwrite = false;
                 }
-            });
+            }, end, len);
 
             start = end;
         }
