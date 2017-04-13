@@ -38,13 +38,18 @@ function isStyle(file) {
 }
 
 function readLine(data, cb) {
-    var arr = data.split('\n'),
-        start = 0;
+    for(var index = data.indexOf('\n'); index > -1;) {
+        line += data.slice(0, index + 1);
 
-    for (var i in arr) {
-        if (arr[i]) {
-            cb(arr[i] + '\n')
-        }
+        cb(line);
+        data = data.slice(index + 1);
+
+        index = data.indexOf('\n');
+        line = '';
+    }
+
+    if(data.length > 0) {
+        line = data;
     }
 }
 
