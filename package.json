@@ -1,4 +1,36 @@
 {
+  "name": "gulp-css-format-oneline",
+  "version": "1.0.1",
+  "description": "",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ende93/gulp-css-format-oneline"
+  },
+  "scripts": {},
+  "files": [
+    "index.js"
+  ],
+  "author": {
+    "name": "ende93",
+    "url": "https://github.com/ende93/"
+  },
+  "keywords": [
+    "gulpplugin",
+    "css",
+    "oneline",
+    "format"
+  ],
+  "engines": {
+    "node": ">=4.0.0"
+  },
+  "license": "MIT",
+  "readme": "",
+  "readmeFilename": "README.md",
+  "bugs": {
+    "url": "https://github.com/ende93/gulp-css-format-oneline/issues"
+  },
+  "homepage": "https://github.com/ende93/gulp-css-format-oneline",
   "dependencies": {
     "gulp": "^3.9.1",
     "gulp-util": "^3.0.8",
