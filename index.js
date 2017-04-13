@@ -49,7 +49,7 @@ function readLine(data, cb, end, len) {
     }
 
     if (data.length > 0) {
-        line = data;
+        line += data;
     }
 
     if(end >= len) {
@@ -76,7 +76,7 @@ function gulpPrefix() {
 
         var check = isStyle(file),
             data, start = 0,
-            end = 0;
+            end = BUFF_READ_LENGTH;
         var buffer = new Buffer(''),
             _rule = '',
             canwrite = false,
@@ -87,11 +87,6 @@ function gulpPrefix() {
         }
 
         while (start < len && end < len) {
-            if (end + 100 > len) {
-                end = len;
-            } else {
-                end += BUFF_READ_LENGTH;
-            }
 
             readLine(file.contents.slice(start, end).toString(), function (str) {
                 if (check == true ||
@@ -108,8 +103,7 @@ function gulpPrefix() {
                     } else {
                         _rule += dealRuleLine(str);
 
-                        var index = _rule.indexOf('}');
-                        if (index > -1) {
+                        if (_rule.indexOf('}') > -1) {
                             _rule += '\n';
                             canwrite = true;
                         }
@@ -130,6 +124,7 @@ function gulpPrefix() {
             }, end, len);
 
             start = end;
+            end = (end + BUFF_READ_LENGTH) > len ? len : (end + BUFF_READ_LENGTH);
         }
 
         file.contents = buffer;

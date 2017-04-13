@@ -2,7 +2,13 @@
     display: none;
     display: none;
     display: none;
-}
+} 
+.l-info span.pocket-logo{background:url(../images/proket-logo.png) no-repeat center;width:70px;height:2.4rem;background-size:3.2rem auto;-webkit-background-size:3.2rem auto;}
+.m-info{ width:70%; height:2.2rem; line-height:2.2rem; margin:0 auto; text-align:center;font-size: .8rem;color: #333;}
+.m-info span.pocket-logo{background:url(../images/proket-logo.png) no-repeat center;width:4.4rem;height:100%;display:inline-block;background-size:4.4rem auto;-webkit-background-size:4.4rem auto;}
+.r-info{ position:absolute; height:2.2rem; line-height:2.2rem; top:0; right:5px;}
+.r-info a{float: left;width: 2rem;height: 2.2rem;line-height: 2.2rem;display: block;font-size: 1rem;text-align: center;color: #a2a2a2;}
+.btn_user{ }
 /* comment */
 .c .a .b {display: none; font-size: 1rem; line-height: 3em;}
 .b {display: none; font-size: 1rem; line-height: 3em;}
