@@ -2,6 +2,7 @@
 gulp plugin for format multi lines css rule to oneline.
 
 this can use for html\ejs that has style tag or just for css file
+
 # example
 ## origin
 ```
