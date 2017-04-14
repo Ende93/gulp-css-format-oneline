@@ -1,3 +1,4 @@
+@charset 'utf-8';
 .a .c .b+a+c.asd:nth-child(3) {
     display: none;
     display: none;
@@ -22,3 +23,7 @@ asdasd
 .c {}
 
 .d {}
+
+@keyframes a {
+
+}

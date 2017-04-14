@@ -1,3 +1,4 @@
+@charset 'utf-8';
 .a .c .b+a+c.asd:nth-child(3) {display: none;display: none;display: none;}
 .l-info span.pocket-logo{background:url(../images/proket-logo.png) no-repeat center;width:70px;height:2.4rem;background-size:3.2rem auto;-webkit-background-size:3.2rem auto;}
 .m-info{ width:70%; height:2.2rem; line-height:2.2rem; margin:0 auto; text-align:center;font-size: .8rem;color: #333;}
@@ -12,3 +13,8 @@
 sdasd
 asdasd
  asda
+   dsad
+   */
+.c {}
+.d {}
+@keyframes a {}

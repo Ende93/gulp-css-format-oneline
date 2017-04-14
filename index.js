@@ -81,12 +81,14 @@ function gulpPrefix() {
             _rule = '',
             canwrite = false,
             len = file.contents.length;
+        
+        end = end >= len ? len : end;
 
         if (!check) {
             return callback(null, file);
         }
 
-        while (start < len && end < len) {
+        while (start < len && end <= len) {
 
             readLine(file.contents.slice(start, end).toString(), function (str) {
                 if (check == true ||
@@ -103,7 +105,8 @@ function gulpPrefix() {
                     } else {
                         _rule += dealRuleLine(str);
 
-                        if (_rule.indexOf('}') > -1) {
+                        if (_rule.indexOf('}') > -1
+                        || (_rule.indexOf('@') > -1 && _rule.indexOf(';') > -1) ) {
                             _rule += '\n';
                             canwrite = true;
                         }
