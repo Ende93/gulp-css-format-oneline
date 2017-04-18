@@ -3,7 +3,7 @@ var gutil = require('gulp-util');
 var path = require('path');
 
 var line = '';
-var styleStart = '<style>',
+var styleStart = '<style',
     styleEnd = '<\/style>',
     commentStart = '/*',
     commentEnd = '*/';
@@ -30,7 +30,8 @@ function isStyle(file) {
             // next line is true style
             // now is '<style>'
             return dealing++;
-        } else if (index[1] > -1) {
+        } 
+        if (index[1] > -1) {
             // not style anymore
             return --dealing;
         }
@@ -62,6 +63,8 @@ function gulpPrefix() {
         isComment = false;
 
     var stream = through.obj(function (file, encoding, callback) {
+        line = '';
+
         if (file.isNull()) {
             return callback(null, file);
         }
@@ -84,10 +87,9 @@ function gulpPrefix() {
         
         end = end >= len ? len : end;
 
-        if (!check) {
+        if (check === false) {
             return callback(null, file);
         }
-
         while (start < len && end <= len) {
 
             readLine(file.contents.slice(start, end).toString(), function (str) {
@@ -106,7 +108,7 @@ function gulpPrefix() {
                         _rule += dealRuleLine(str);
 
                         if (_rule.indexOf('}') > -1
-                        || (_rule.indexOf('@') > -1 && _rule.indexOf(';') > -1) ) {
+                        || (_rule.indexOf('@') > -1 && _rule.indexOf(';') > -1) && _rule.indexOf('{') == -1) {
                             _rule += '\n';
                             canwrite = true;
                         }
