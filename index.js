@@ -1,162 +1,147 @@
-var through = require('through2');
-var gutil = require('gulp-util');
-var path = require('path');
+const through = require('through2');
+const gutil = require('gulp-util');
+const path = require('path');
+const styleTagTrim = require('./utils/styleTagTrim')
+const { commentReg, paranthesesReg } = require('./utils/reg')
 
-var line = '';
-var styleStart = '<style',
-    styleEnd = '<\/style>',
-    commentStart = '/*',
-    commentEnd = '*/';
+function isStyle(file, target) {
+  let ext = path.extname(file.path);
 
-var BUFF_READ_LENGTH = 100;
+  if (ext === target) {
+    return true;
+  }
+  if (!/\.(htm|html|css|ejs|ftl)/.test(ext)) {
+    return false;
+  }
+  return true;
+}
+// clear style content
+function clear(content, option) {
+  let ret = content.replace(/(^\s+)|\t+/g, '')
+  if (option.clearComment) {
+    ret = ret.replace(commentReg, '')
+  }
+  if (option.clearLine) {
+    ret = ret.replace(/\s+/g, '')
+  } else {
+    // clear \s\n in css rules
+    // ie. { ... }
+    ret = ret.replace(paranthesesReg, function ($, $1, $2) {
+      return $1.replace(/\n/g, '').replace(/\s{2,}/g, ' ') + $2.replace(/[\s\n]+/g, '') + '\n'
+    })
+    ret = ret.replace(/\n\s{1,}/g, '\n')
+    // remove last \n
+    if (ret.slice(-1) === '\n') {
+      ret = ret.slice(0, -1)
+    }
+  }
+  return ret;
+}
+function format(content, ext, option) {
+  if (ext === '.css' || ext == null) {
+    return clear(content, option)
+  } else {
+    // html content
+    // clear style tag
+    content = styleTagTrim(content)
 
-function isStyle(file) {
-    var dealing = 0,
-        ext = path.extname(file.path);
+    let ret = [];
+    let styleIndexs = [];
+    let endTagLen = '</style>'.length;
+    let start = 0, end = 0,
+      len = content.length;
+    let prevEnd = start;
+    do {
+      start = content.indexOf('<style>', prevEnd)
+      end = content.indexOf('</style>', start)
+      if (start > -1 && end > -1) {
+        end += endTagLen;
+        ret.push.call(
+          ret,
+          content.slice(prevEnd, start),
+          clear(content.slice(start, end), option)
+        )
+        prevEnd = end;
+      }
+    } while (start > -1 && end > -1 && end <= len)
 
-    if (ext == '.css') {
+    ret.push(content.slice(prevEnd));
+
+    if (option.merge) {
+      let isStyle = /^<style>/;
+      // filter \s between styles
+      ret = ret.filter((str, i, arr) => {
+        if (i > 0 && isStyle.test(arr[i - 1]) && isStyle.test(arr[i + 1])) {
+          return !/\s+/.test(str)
+        }
         return true;
-    } else if (ext == '.js' || ext == '.json') {
-        return false;
-    }
+      })
+      let styles = ret.filter(str => isStyle.test(str))
+      let others = ret.filter(str => !isStyle.test(str))
+      if (styles.length > 1) {
+        styles = '<style>' + styles.reduce((a, b) => {
+          return a + b.replace(/<.?style>/g, '')
+        }, '') + '</style>'
+        if (others.length > 1) {
+          others.splice(1, 0, styles)
+          if (others[0].slice(-1) !== '\n') {
+            others[1] = '\n' + others[1]
+          }
+          if (others[2] && others[2].slice(0) !== '\n') {
+            others[1] = others[1] + '\n'
+          }
 
-    return function (str) {
-        var index = [
-            str.indexOf(styleStart),
-            str.indexOf(styleEnd)
-        ];
-
-        if (index[0] > -1) {
-            // next line is true style
-            // now is '<style>'
-            return dealing++;
-        } 
-        if (index[1] > -1) {
-            // not style anymore
-            return --dealing;
+        } else {
+          others = styles;
         }
-
-        return dealing;
-    };
+        ret = others
+      }
+    }
+    return ret.join('');
+  }
 }
 
-function readLine(data, cb, end, len) {
-    for (var index = data.indexOf('\n');
-      index > -1; index = data.indexOf('\n'), line = '') {
-        line += data.slice(0, index + 1);
+function gulpPrefix(option) {
+  option = Object.assign({
+    // clear comment
+    clearComment: true,
+    // merge all style tag if html
+    merge: false,
+    // remove \n\r
+    clearLine: true,
+    ext: null
+  }, option)
 
-        cb(line);
-        data = data.slice(index + 1);
+  let stream = through.obj(function (file, encoding, callback) {
+    if (file.isNull()) {
+      return callback(null, file);
     }
 
-    if (data.length > 0) {
-        line += data;
+    if (file.isStream()) {
+      return callback(createError(file, 'Streaming not supported'));
     }
 
-    if(end >= len) {
-        cb(line);
-    }
-}
-
-function gulpPrefix() {
-    var bracketStart = false,
-        isComment = false;
-
-    var stream = through.obj(function (file, encoding, callback) {
-        line = '';
-
-        if (file.isNull()) {
-            return callback(null, file);
-        }
-
-        if (file.isStream()) {
-            return callback(createError(file, 'Streaming not supported'));
-        }
-
-        if (!file.isBuffer()) {
-            return callback(null, file);
-        }
-
-        var check = isStyle(file),
-            data, start = 0,
-            end = BUFF_READ_LENGTH;
-        var buffer = new Buffer(''),
-            _rule = '',
-            canwrite = false,
-            len = file.contents.length;
-        
-        end = end >= len ? len : end;
-
-        if (check === false) {
-            return callback(null, file);
-        }
-        while (start < len && end <= len) {
-
-            readLine(file.contents.slice(start, end).toString(), function (str) {
-                if (check == true ||
-                    (typeof check == 'function' && check(str))
-                ) {
-                    if (str.indexOf(commentStart) > -1 || isComment) {
-                        canwrite = true;
-                        _rule = str;
-                        if(str.indexOf(commentEnd) > -1) {
-                            isComment = false;
-                        } else {
-                            isComment = true;
-                        }
-                    } else {
-                        _rule += dealRuleLine(str);
-
-                        if (_rule.indexOf('}') > -1
-                        || (_rule.indexOf('@') > -1 && _rule.indexOf(';') > -1) && _rule.indexOf('{') == -1) {
-                            _rule += '\n';
-                            canwrite = true;
-                        }
-                    }
-                } else {
-                    canwrite = true;
-                    _rule = str;
-                }
-
-                if (canwrite || check == false) {
-                    // write one selector rules,
-                    // eg. '.selector { display:...;font:...;}'
-                    buffer = Buffer.concat([buffer, new Buffer(_rule)]);
-
-                    _rule = '';
-                    canwrite = false;
-                }
-            }, end, len);
-
-            start = end;
-            end = (end + BUFF_READ_LENGTH) > len ? len : (end + BUFF_READ_LENGTH);
-        }
-
-        file.contents = buffer;
-        callback(null, file);
-    });
-
-    function dealRuleLine(str) {
-        str = str.trim();
-
-        if (str.indexOf('{') > -1) {
-            bracketStart = true;
-        } else if (str.indexOf('}') > -1) {
-            bracketStart = false;
-        }
-
-        if (bracketStart) {
-            str = str.replace(/\n/g, '');
-        }
-
-        return str;
+    if (!file.isBuffer()) {
+      return callback(null, file);
     }
 
-    stream.on('error', function (err) {
-        console.log(err);
-    });
+    let check = isStyle(file, option.ext);
 
-    return stream;
+    if (check === false) {
+      return callback(null, file);
+    }
+    let result = file.contents.toString();
+    file.contents = Buffer.from(
+      format(result, path.extname(file.path), option)
+    )
+    callback(null, file);
+  });
+
+  stream.on('error', function (err) {
+    console.log(err);
+  });
+
+  return stream;
 }
 
 module.exports = gulpPrefix;

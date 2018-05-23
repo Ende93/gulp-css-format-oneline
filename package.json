@@ -1,7 +1,7 @@
 {
   "name": "gulp-css-format-oneline",
-  "version": "1.0.8",
-  "description": "",
+  "version": "1.2.0",
+  "description": "user gulp to compress <style> for html or compress css files",
   "main": "index.js",
   "repository": {
     "type": "git",
@@ -9,17 +9,16 @@
   },
   "scripts": {},
   "files": [
-    "index.js"
+    "index.js", "utils/*.js"
   ],
   "author": {
     "name": "ende93",
     "url": "https://github.com/ende93/"
   },
   "keywords": [
-    "gulpplugin",
-    "css",
-    "oneline",
-    "format"
+    "gulp plugin",
+    "style",
+    "compress"
   ],
   "engines": {
     "node": ">=4.0.0"
@@ -32,8 +31,10 @@
   },
   "homepage": "https://github.com/ende93/gulp-css-format-oneline",
   "dependencies": {
-    "gulp": "^3.9.1",
     "gulp-util": "^3.0.8",
     "through2": "~2.0.3"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.1"
   }
 }

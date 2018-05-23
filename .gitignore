@@ -1,1 +1,5 @@
 node_modules
+__test__/dest/
+__test__/*.css
+__test__/*.html
+.vscode
